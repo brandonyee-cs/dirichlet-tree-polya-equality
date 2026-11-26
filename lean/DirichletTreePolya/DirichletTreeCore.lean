@@ -1,21 +1,23 @@
 import Mathlib
 
 /-!
-# Dirichlet trees: the elementary core of the equality case in λ_k ≥ (πk/L)²
+# Dirichlet trees: Steps 3–4 of the equality case in λ_k ≥ (πk/L)²
 
-Formalizes Steps 2–4 of `publish/dirichlet-tree-polya-equality/PROOF.md` (Harrell–Kennedy–Ramos,
-Open Problem 1.12(3)) in the finite-dimensional "Prüfer angle" form. Everything is proved
-(no `sorry`); the spectral input is an explicit hypothesis `SpectralInput` (Part 6).
+This file formalizes Steps 3–4 of `PROOF.md` (Harrell–Kennedy–Ramos, Open Problem 1.12(3)), stated
+in terms of the angles `s_e`, `t_e` rather than eigenvalues. Everything here is proved (no `sorry`).
+The counting formula (2) of Steps 1–2 enters only through the explicit hypothesis `SpectralInput` (Part 6).
 
-* `RTree`: finite tree rooted at a Dirichlet leaf; `WF`: lengths `> 0`, interior vertices have
-  `≥ 2` children (no degree-2 vertices). `sAng`, `tAng`: angles `s_e`, `t_e = s_e + ωℓ_e`,
-  with `s_e = arccot (Σ cot t_i)` at interior vertices. `Generic`: `sin (ωℓ_e) ≠ 0 ≠ sin t_e`.
-* (a) `vertex_lemma`: `d ≥ 2`, `τ ∈ (0,π)^d` ⇒ `Σ τ_i - arccot (Σ cot τ_i) > 0`.
+* `RTree` is a finite tree rooted at a Dirichlet leaf. `WF` says the lengths are positive and every
+  interior vertex has at least 2 children (no degree-2 vertices). `sAng` and `tAng` are the angles
+  `s_e` and `t_e = s_e + ωℓ_e`, with `s_e = arccot (Σ cot t_i)` at an interior vertex. `Generic`
+  says `sin (ωℓ_e) ≠ 0` and `sin t_e ≠ 0` for every edge.
+* `vertex_lemma`: for `d ≥ 2` and `τ ∈ (0,π)^d`, `Σ τ_i - arccot (Σ cot τ_i) > 0`.
 * `key_identity`: identity (3), `ωL - π Σ_e ⌊t_e/π⌋ = τ_root + Σ_c f_c`.
-* (b) `key_inequality`: generic `ω` ⇒ `Σ_e ⌊t_e/π⌋ < ωL/π`.
-* (c) `equality_core`: if `(πk/L, πk/L + ε)` is generic and `Σ_e ⌊t_e/π⌋ ≥ k` there, every
-  `ℓ_e` is a positive integer multiple of `L/k`.
-* (b') `SpectralInput.polya_bound`, (c') `SpectralInput.equality_iff` (both directions).
+* `key_inequality`: for generic `ω`, `Σ_e ⌊t_e/π⌋ < ωL/π`.
+* `equality_core`: if every `ω` in `(πk/L, πk/L + ε)` is generic and `Σ_e ⌊t_e/π⌋ ≥ k` there,
+  then every `ℓ_e` is a positive integer multiple of `L/k`.
+* `SpectralInput.polya_bound` (the bound (1.6)) and `SpectralInput.equality_iff` (the theorem,
+  both directions), assuming `SpectralInput`.
 -/
 
 open Real Set Filter Topology
@@ -160,7 +162,7 @@ theorem vertex_lemma_aux (n : ℕ) (τ : Fin (n + 2) → ℝ) (h0 : ∀ i, 0 < �
     have h3 := ih (fun i => τ i.succ) (fun i => h0 _) (fun i => h1 _)
     linarith
 
-/-- **(a) General-`d` vertex lemma.** For `d ≥ 2` and `τ ∈ (0, π)^d`,
+/-- **Vertex lemma.** For `d ≥ 2` and `τ ∈ (0, π)^d`,
 `Σ τ_i - arccot (Σ cot τ_i) > 0`. -/
 theorem vertex_lemma {d : ℕ} (hd : 2 ≤ d) (τ : Fin d → ℝ) (h0 : ∀ i, 0 < τ i)
     (h1 : ∀ i, τ i < π) : 0 < ∑ i, τ i - arccot (∑ i, cot (τ i)) := by
@@ -300,8 +302,8 @@ theorem vsum_fvert_nonneg {ω : ℝ} {T : RTree} (hwf : WF T) (hgen : Generic T 
       Finset.sum_nonneg fun i _ => ih i (hwf.2 i) (hgen.2 i)
     linarith
 
-/-- **(b) Key inequality.** For generic `ω` (any `ω`, in fact; positivity of `ω` is not
-needed), `Σ_e ⌊t_e(ω)/π⌋ < ω L / π`. -/
+/-- **The bound (1.6) in angle form.** For generic `ω`, `Σ_e ⌊t_e(ω)/π⌋ < ω L / π`.
+(Positivity of `ω` is not needed.) -/
 theorem key_inequality {T : RTree} (hwf : WF T) {ω : ℝ} (hgen : Generic T ω) :
     floorSum T ω < ω * totalLen T / π := by
   have h := key_identity T ω
@@ -310,7 +312,7 @@ theorem key_inequality {T : RTree} (hwf : WF T) {ω : ℝ} (hgen : Generic T ω)
   rw [lt_div_iff₀ pi_pos]
   nlinarith
 
-/-! ## Part 3. Monotonicity of the angles on a generic interval (PROOF.md §3.4, gap d) -/
+/-! ## Part 3. Monotonicity of the angles on a generic interval (PROOF.md, Section 4.4) -/
 
 /-- A continuous strictly increasing function on an interval that never meets `πℤ` stays in one
 strip `(nπ, (n+1)π)`. -/
@@ -412,7 +414,7 @@ theorem angles_mono {J : Set ℝ} (hJ : J.OrdConnected) :
     exact ⟨hscont.add hl.1, fun x hx y hy hxy => add_lt_add (hsmono hx hy hxy) (hl.2 hx hy hxy),
       hscont, hsmono.monotoneOn⟩
 
-/-! ## Part 4. The one-sided limit at a vertex (PROOF.md §3.4, "Limit") -/
+/-! ## Part 4. The one-sided limit at a vertex (PROOF.md, Section 4.4) -/
 
 theorem tendsto_cot_nhdsGT_zero : Tendsto cot (𝓝[>] 0) atTop := by
   have hsin : Tendsto sin (𝓝[>] 0) (𝓝[>] 0) := by
@@ -439,7 +441,7 @@ theorem tendsto_arccot_atTop : Tendsto arccot atTop (𝓝 0) := by
 /-- **Vertex limit lemma.** At an interior vertex with `d ≥ 2` children whose reduced angles
 `τ_i(ω) ∈ (0, π)` are nondecreasing on `(a, b)`, if the vertex defect
 `Σ τ_i - arccot (Σ cot τ_i)` tends to `0` as `ω ↓ a`, then every `τ_i → 0` and the parent angle
-`s → 0`. (This replaces the continuous extension of `f` to `[0, π)^d` in PROOF.md.) -/
+`s → 0`. (PROOF.md uses the continuous extension of `f` to `[0, π)^d` instead.) -/
 theorem vertex_limit {d : ℕ} (hd : 2 ≤ d) {a b : ℝ} (hab : a < b) (τ : Fin d → ℝ → ℝ)
     (σ : ℝ → ℝ) (hmono : ∀ i, MonotoneOn (τ i) (Ioo a b))
     (hpos : ∀ i, ∀ ω ∈ Ioo a b, 0 < τ i ω) (hlt : ∀ i, ∀ ω ∈ Ioo a b, τ i ω < π)
@@ -503,7 +505,7 @@ theorem vertex_limit {d : ℕ} (hd : 2 ≤ d) {a b : ℝ} (hab : a < b) (τ : Fi
     exact Finset.single_le_sum (f := fun i => τ i ω) (fun i _ => (hpos i ω hω).le)
       (Finset.mem_univ i)
 
-/-! ## Part 5. The equality case (PROOF.md §3.4) -/
+/-! ## Part 5. The equality case (PROOF.md, Section 4.4) -/
 
 theorem eall_mono {P Q : RTree → Prop} (hPQ : ∀ S, P S → Q S) :
     ∀ T, eall P T → eall Q T := by
@@ -610,8 +612,8 @@ theorem totalLen_pos {T : RTree} (hwf : WF T) : 0 < totalLen T := by
     have h : (node ℓ d cs).len = ℓ := rfl
     linarith [hwf.1.1]
 
-/-- **(c) Equality core.** Let `ω₀ = π k / L` with `k ≥ 1`. If on some interval `(ω₀, ω₀ + ε)`
-every `ω` is generic (the interval avoids the exceptional set `E`) and
+/-- **The equality case in angle form.** Let `ω₀ = π k / L` with `k ≥ 1`. If on some interval
+`(ω₀, ω₀ + ε)` every `ω` is generic (the interval avoids the exceptional set `E`) and
 `Σ_e ⌊t_e(ω)/π⌋ ≥ k`, then every edge length is a positive integer multiple of `L / k`. -/
 theorem equality_core {T : RTree} (hwf : WF T) {k : ℕ} (hk : 1 ≤ k) {ε : ℝ} (hε : 0 < ε)
     (hgen : ∀ ω ∈ Ioo (π * k / totalLen T) (π * k / totalLen T + ε), Generic T ω)
@@ -696,27 +698,28 @@ theorem floorSum_ge_of_multiples {T : RTree} (hwf : WF T) {k : ℕ} (hk : 1 ≤ 
 
 end RTree
 
-/-! ## Part 6. The spectral bridge (explicit hypothesis, NOT formalized)
+/-! ## Part 6. The spectral input (an explicit hypothesis, not formalized)
 
-`SpectralInput T lam` packages the *standard* spectral-theoretic input about the Dirichlet
-Laplacian `-d²/dx²` on the metric tree encoded by `T` (Kirchhoff conditions at interior vertices,
-Dirichlet at the leaves), with `lam 1 ≤ lam 2 ≤ …` its eigenvalues counted with multiplicity
-(`lam 0` is an unused dummy). It is an *assumption* of the theorems below; none of the following
-is formalized here (Mathlib has no spectral theory of quantum graphs):
+`SpectralInput T lam` collects the standard spectral facts about the Laplacian `-d²/dx²` on the
+metric tree described by `T` (Kirchhoff conditions at interior vertices, Dirichlet conditions at
+the leaves), where `lam 1 ≤ lam 2 ≤ …` are its eigenvalues counted with multiplicity (`lam 0` is
+an unused placeholder). It is a hypothesis of the theorems below. None of the following is
+formalized here, since Mathlib has no spectral theory of quantum graphs:
 
-* `mono`, `finite_below`: the spectrum is discrete, listed increasingly with multiplicity, with
-  finitely many eigenvalues below any level (compact resolvent).
-* `index`: the index formula (2) of PROOF.md, `N⁻(ω²) = Σ_e ⌊t_e(ω)/π⌋` for generic `ω > 0`,
-  where `N⁻(μ) = #{j ≥ 1 : λ_j < μ}`. Its proof combines min-max (`N⁻(μ)` = negative index of
-  `a(f) - μ‖f‖²` on `H¹`), Step 1 (splitting `H = H_harm ⊕ H_0`, which gives
-  `N⁻ = Σ_e ⌊ωℓ_e/π⌋ + n₋(M)`) and Step 2 (LDLᵀ elimination of the vertex matrix `M` with the
-  pivot/Schur identities, Sylvester's law of inertia, and the floor bookkeeping
+* `mono`, `finite_below`: the spectrum is discrete and listed in increasing order with
+  multiplicity, with finitely many eigenvalues below any level (compact resolvent).
+* `index`: the counting formula (2) of PROOF.md, `N⁻(ω²) = Σ_e ⌊t_e(ω)/π⌋` for generic `ω > 0`,
+  where `N⁻(μ) = #{j ≥ 1 : λ_j < μ}`. Its proof combines min-max (`N⁻(μ)` is the negative index
+  of `a(f) - μ‖f‖²` on `H¹`), Step 1 (the splitting `H = H_harm ⊕ H_0`, which gives
+  `N⁻ = Σ_e ⌊ωℓ_e/π⌋ + n₋(M)`) and Step 2 (LDLᵀ elimination of the vertex matrix `M` using the
+  pivot and Schur identities, Sylvester's law of inertia, and the count
   `⌊ωℓ_e/π⌋ + [p_c < 0] = ⌊t_e/π⌋`). The trigonometric identities used in Step 2 are proved in
-  `QuantumGraphEquality.lean` / Part 1 here, but the linear-algebra and functional-analysis parts
-  are not.
-* `generic_right`: the non-generic set `E` is discrete in `(0, ∞)` (PROOF.md §3.2, "gap b": it is
-  contained in the zero set of finitely many nonzero entire functions); only the consequence
-  "every `ω₀ ≥ 0` has a punctured right neighbourhood of generic frequencies" is used. -/
+  `QuantumGraphEquality.lean` and in Part 1 here; the linear algebra and functional analysis are
+  not.
+* `generic_right`: the non-generic set `E` is discrete in `(0, ∞)` (PROOF.md, Section 4.2: it lies
+  in the zero set of finitely many entire functions that are not identically zero). Only the
+  consequence "every `ω₀ ≥ 0` has a punctured right neighbourhood of generic frequencies" is
+  used. -/
 
 open RTree
 
@@ -766,7 +769,7 @@ theorem exists_generic_between (hS : SpectralInput T lam) {a b : ℝ} (ha : 0 �
     [have := lt_min hε (sub_pos.2 hab); have := min_le_right ε (b - a);
      have := lt_min hε (sub_pos.2 hab); have := min_le_left ε (b - a)] <;> linarith
 
-/-- **(b') Pólya bound** `λ_k ≥ (π k / L)²`, from the key inequality and the spectral input. -/
+/-- **The bound (1.6)**, `λ_k ≥ (π k / L)²`, from `key_inequality` and the spectral input. -/
 theorem polya_bound (hS : SpectralInput T lam) (hwf : WF T) {k : ℕ} (hk : 1 ≤ k) :
     (π * k / totalLen T) ^ 2 ≤ lam k := by
   have hL := totalLen_pos hwf
@@ -789,8 +792,8 @@ theorem polya_bound (hS : SpectralInput T lam) (hwf : WF T) {k : ℕ} (hk : 1 �
   have : (k : ℝ) ≤ countBelow lam (ω ^ 2) := by exact_mod_cast hc
   linarith
 
-/-- **(c') Equality characterization** (Open Problem 1.12(3), conditional on `SpectralInput`):
-`λ_k = (π k / L)²` iff every edge length is a positive integer multiple of `L / k`. -/
+/-- **The theorem** (Open Problem 1.12(3), assuming `SpectralInput`): `λ_k = (π k / L)²` if and
+only if every edge length is a positive integer multiple of `L / k`. -/
 theorem equality_iff (hS : SpectralInput T lam) (hwf : WF T) {k : ℕ} (hk : 1 ≤ k) :
     lam k = (π * k / totalLen T) ^ 2 ↔
       eall (fun S => ∃ m : ℕ, 0 < m ∧ len S = m * (totalLen T / k)) T := by

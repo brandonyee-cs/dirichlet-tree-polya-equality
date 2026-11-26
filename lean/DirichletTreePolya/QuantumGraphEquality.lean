@@ -28,8 +28,9 @@ graph Laplacians*, arXiv:2603.26172v1 (2026), Remark 1.7, eq. (1.6), and Open Pr
   `inf_{dim V = k} sup_{0 ≠ f ∈ V} (∫|f'|²)/(∫|f|²)`, written without division.
 
 ## Contents
-* Definitions, the Pólya bound (1.6) (`PolyaBound`, `sorry`: [BKKM, Thm 4.7], or our §3.3), and the
-  open problem `OpenProblem_1_12_3` as a `Prop`; our theorem `openProblem_1_12_3` (`sorry`).
+* Definitions, the Pólya bound (1.6) (`PolyaBound`, left as `sorry`; see [BKKM17, Thm 4.7] or
+  PROOF.md, Section 4.3), and the open problem `OpenProblem_1_12_3` as a `Prop`; the theorem
+  `openProblem_1_12_3` (left as `sorry`; `DirichletTreeCore.lean` proves Steps 3–4).
 * **Proved:** the elementary identities used in the proof (pivot identity, Schur-complement
   identity, cotangent addition, the algebraic vertex identity and its positivity) and the
   **two-child vertex lemma** `vertex_lemma` (`a + b > s` when `cot s = cot a + cot b`).
@@ -109,11 +110,11 @@ def OpenProblem_1_12_3 : Prop :=
     (Γ.lam k = (π * k / Γ.L) ^ 2 ↔ ∀ e : Γ.Edge, ∃ m : ℕ, 0 < m ∧ Γ.ℓ e = m * (Γ.L / k))
 
 /-- (1.6). `sorry`: needs the identification of `lam` with the spectrum and the Prüfer-angle
-argument of WRITEUP §3.3 (or [BKKM, Thm 4.7]); not formalised. -/
+argument of PROOF.md, Section 4.3 (or [BKKM17, Thm 4.7]); not formalised. -/
 theorem polyaBound : PolyaBound := by
   sorry
 
-/-- **Main theorem** (WRITEUP §2): the answer to Open Problem 1.12(3) is yes, for every `k ≥ 1`.
+/-- **Main theorem** (PROOF.md, Section 1): the answer to Open Problem 1.12(3) is yes, for every `k ≥ 1`.
 `sorry`: the proof uses the Dirichlet-to-Neumann index formula, tree elimination with Prüfer
 angles, the vertex lemma below, and a one-sided limit argument; formalising it needs Sobolev
 spaces on metric graphs, min-max for unbounded self-adjoint operators and Sylvester's law of
