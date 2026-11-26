@@ -1,1 +1,2 @@
 import DirichletTreePolya.QuantumGraphEquality
+import DirichletTreePolya.DirichletTreeCore

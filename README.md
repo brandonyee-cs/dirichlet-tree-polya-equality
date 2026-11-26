@@ -31,13 +31,17 @@ which is exactly the statement that every edge is a multiple of L/k. Full proof:
 ## Status, honestly
 
 - **Proof:** complete, written for a mathematician in [PROOF.md](PROOF.md).
-- **Audit:** checked by an independent AI referee working from the paper, with its own code (verdict CORRECT,
-  four small write-up gaps, all fixed): [AUDIT.md](AUDIT.md). **Not yet checked by a human expert.**
+- **Audit:** three independent AI reviews (Claude), each working from the paper with its own code, two of
+  them instructed to hunt for errors: all verdict CORRECT, with only small write-up gaps, all fixed. See
+  [AUDIT.md](AUDIT.md). **Not yet checked by a human expert.**
 - **Numerics (evidence, not proof):** 16,008 random (tree, k) cases with 1,339 equality cases, and a second
   independent check with 4,641 cases. In every equality case all edges were multiples of L/k.
-- **Lean 4 / Mathlib:** the algebraic identities and the two-child vertex lemma (the analytic heart of the
-  counting step) are formally proved. The spectral parts (H¹ on metric graphs, min-max, inertia) are stated
-  but left as `sorry`, since Mathlib has no spectral theory of quantum graphs yet. See PROOF.md §5.
+- **Lean 4 / Mathlib:** the new part of the argument (Steps 2–4: the angle identity, the vertex lemma for any
+  number of children, and the equality-case limit) is **formally verified with no `sorry`**, deriving both
+  the bound (1.6) and the full equality characterization from an explicit hypothesis `SpectralInput`. That
+  hypothesis packages the standard spectral facts (min-max and the eigenvalue-counting formula of Step 1),
+  which are proved on paper but not in Lean, since Mathlib has no spectral theory of quantum graphs.
+  See PROOF.md §5.
 - **AI use:** the proof was found, written and checked with AI assistance (Claude). I take responsibility for the
   claims here; corrections are very welcome.
 

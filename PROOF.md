@@ -23,6 +23,11 @@ show for k = 1, 2."* The bound (1.6) is a special case of [BKKM, Thm 4.7], cited
   continuity, plus the outgoing derivatives sum to zero.
 - Degree-2 vertices with Kirchhoff conditions are invisible to the operator, so we suppress them. "Edge"
   in the conclusion means an edge after suppression.
+  This is the paper's convention ("Vertices of degree two are understood to be suppressed in all theorems of
+  this article"), and it is necessary: an interval with a dummy vertex at a generic point has equality for
+  every k.
+- Dirichlet conditions at interior vertices (as allowed in the paper's Prop. 1.9) are outside the class
+  considered; such a graph decouples into Dirichlet trees.
 - L = |Γ| = Σ_e ℓ_e is the total length.
 - λ_1 ≤ λ_2 ≤ … are the eigenvalues of the Laplacian −d²/dx², counted with multiplicity. The form domain
   is H = {f ∈ H¹(Γ) : f continuous on Γ, f = 0 at the leaves}, and the form is a(f) = ∫_Γ |f′|².
@@ -72,10 +77,12 @@ since g vanishes at all edge endpoints. So the splitting is Q_μ-orthogonal.
 
 Negative indices add over a Q-orthogonal sum. To see this, each summand has a Q-nonnegative complement of
 codimension equal to its index:
-- in H_0, the span of the Dirichlet eigenfunctions with eigenvalue ≥ μ;
+- in H_0, the closed span of the Dirichlet eigenfunctions with eigenvalue ≥ μ;
 - in H_harm, which is finite-dimensional, linear algebra.
 
-The sum of these complements is Q-nonnegative and has codimension n₋(Q|H_0) + n₋(Q|H_harm).
+The sum of these complements is Q-nonnegative and has codimension n₋(Q|H_0) + n₋(Q|H_harm). So
+n₋(Q) ≤ n₋(Q|H_0) + n₋(Q|H_harm). Conversely, if U_0 ⊂ H_0 and U_h ⊂ H_harm are Q-negative subspaces,
+then Q(u_0 + u_h) = Q(u_0) + Q(u_h) < 0 for (u_0, u_h) ≠ 0, so U_0 ⊕ U_h is Q-negative and equality holds.
 
 On H_0 the index counts the Dirichlet eigenvalues (jπ/ℓ_e)² < μ on each edge, which is ⌊ω′ℓ_e/π⌋. The
 case of equality jπ = ω′ℓ_e is excluded by the choice of ω′. On H_harm, Q_μ(h) = xᵀMx. An edge with end
@@ -180,7 +187,7 @@ f(τ) = Σ τ_i − s. Then f(τ) > 0.
      f(τ) = g(τ₁, s′) + (Σ_{i≥2} τ_i − s′),   g(a, b) := a + b − s(a, b).
 
    For d − 1 = 1 the bracket is 0. Otherwise it is f for d − 1 angles, which is positive by induction.
-   So f > g(τ₁, s′) > 0 by step 1.
+   So f ≥ g(τ₁, s′) > 0 by step 1 (with equality in the first step when d = 2).
 
    The induction must start at d = 2: with a single child, f ≡ 0. That is exactly why degree-2 vertices
    are suppressed. ∎
@@ -200,7 +207,8 @@ Let ω = πk/L and suppose λ_k = ω². Then N(ω²) ≥ k. Choose ε > 0 so tha
 contains no point of E, and no eigenvalue lies in (ω², (ω + ε)²).
 
 **Monotonicity (referee gap d).** On J = (ω, ω + ε) every s_e and t_e is continuous. We show by induction
-from the leaves that t_e is strictly increasing and s_e is nondecreasing on J.
+from the leaves that t_e is strictly increasing on J, and s_e is nondecreasing (constant 0 for leaf-start
+edges, strictly increasing otherwise).
 - For leaf-start edges, s_e ≡ 0 and t_e = ω′ℓ_e.
 - At an interior vertex, each child t_i is continuous and never meets πℤ on J. So it stays in one
   interval (mπ, (m+1)π). There cot t_i is strictly decreasing, so Σ cot t_i is strictly decreasing.
@@ -247,25 +255,31 @@ Lean (§5).
 
 ## 5. Lean status
 
-File: `lean/DirichletTreePolya/QuantumGraphEquality.lean`. It compiles; the
-only warnings are for the `sorry`s.
+Lean 4 (v4.37.0-rc1) with Mathlib, in `lean/`. Two files:
 
-- **Definitions.**
-  - `DirichletTree`: a `SimpleGraph.IsTree` on `Fin n` with n ≥ 2, positive lengths and no degree-2
-    vertices.
-  - `Admissible`: edgewise Lipschitz functions, continuous at vertices and zero at leaves.
-  - `energy`, `mass`, and `lam k`, the Courant–Fischer min-max value.
-  - `PolyaBound` and `OpenProblem_1_12_3` as `Prop`s.
-- **Simplification, stated in the file.** The min-max runs over Lipschitz functions rather than over H¹.
-  This gives the same values because Lipschitz functions form a form core, but that identification is
-  not formalised. Mathlib has no spectral theory of quantum graphs.
-- **Proved:**
-  - `pivot_identity`, `schur_identity`, `cot_add'`, `vertex_identity` and `vertex_numerator_pos`;
-  - **`vertex_lemma`**: the d = 2 vertex lemma s < a + b, which is the analytic heart of Step 3.
-- **`sorry`:**
-  - `polyaBound` (1.6);
-  - `openProblem_1_12_3`, the main theorem. Formalising it needs H¹ on metric graphs, min-max for the
-    self-adjoint realisation, and inertia additivity.
+**`DirichletTreeCore.lean`: Steps 2–4, fully proved (no `sorry`, no `native_decide`, no added axioms).**
+- Model: `RTree` (an edge with the subtree below it; leaves are Dirichlet leaves; `WF` = positive lengths and
+  every interior vertex has ≥ 2 children, i.e. no degree-2 vertices). Angles `sAng`, `tAng` as in §3.2 with
+  `arccot y := π/2 − arctan y`; `Generic`; `floorSum` = Σ_e ⌊t_e/π⌋.
+- `vertex_lemma` (general d), `key_identity` (identity (3)), `key_inequality` (Σ⌊t_e/π⌋ < ωL/π for generic ω),
+  `equality_core` (§3.4: if every ω in (πk/L, πk/L+ε) is generic and Σ⌊t_e/π⌋ ≥ k there, every edge is a
+  positive integer multiple of L/k).
+- The spectral input is an explicit hypothesis `SpectralInput T lam` on an eigenvalue sequence `lam`:
+  monotone, finitely many eigenvalues below any level, the index formula (2) at generic ω, and a generic
+  interval to the right of every ω₀ ≥ 0 (discreteness of the non-generic set). From it Lean derives
+  `SpectralInput.polya_bound` (λ_k ≥ (πk/L)², i.e. (1.6)) and `SpectralInput.equality_iff` (the theorem,
+  both directions).
+- `#print axioms` for all five main results: `[propext, Classical.choice, Quot.sound]`.
+
+**Not formalized:** the facts packaged in `SpectralInput`, i.e. min-max on H¹ of a metric graph, Step 1
+(index formula (1)) and the Step 2 elimination/inertia argument, and the link between `RTree` and the
+`SimpleGraph` model. Mathlib has no spectral theory of quantum graphs. These are standard, are proved on
+paper in §3.1–3.2, and the index formula (2) was checked numerically against independent eigenvalue
+solvers (§4 and AUDIT.md).
+
+**`QuantumGraphEquality.lean`:** an earlier, more literal statement of the problem on `SimpleGraph` trees
+with a min-max definition of λ_k over edgewise Lipschitz functions, with the pivot, Schur, cotangent and
+two-child vertex identities proved; its main theorem is left as `sorry` (superseded by the file above).
 
 ## 6. Prior work / novelty
 
